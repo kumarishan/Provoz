@@ -36,24 +36,30 @@ Both synchronization is enabled separately using Type-Safe Builder Pattern
 
 ```scala
 
-# Undirected Graph
-graphBuilder init(UnDirected) build
-# or default graph type is UnDirected
-graphBuilder build
+// Undirected Graph
+UnDirectedGraph graph = graphBuilder init(UnDirected) build
 
-# Synchronized Undirected Graph
-graphBuilder init(UnDirected) withSyncLevel(GrapLevelSync) build
+// Synchronized Undirected Graph
+UnDirectedGraph graph = graphBuilder init(UnDirected) enableSyncAccess(GrapLevelSync) build
 
-# Synchronized Undirected Graph with Synchronized Node
-graphBuilder withSyncLevel(GraphNodeLevelSync) build
+// Synchronized Undirected Graph with Synchronized Node
+UnDirectedGraph graph = graphBuilder init(UnDirected) enableSyncAccess(GraphNodeLevelSync) build
 
-# Synchronized Directed Graph - store both direction (default)
-graphBuilder init(Directed) withSyncLevel(GraphLevelSync) withStoredDirection(Both) build
-# or
-graphBuilder init(Directed) withSyncLevel(GraphLevelSync) build
+// Synchronized Directed Graph - store both direction (default)
+DirectedGraph graph = graphBuilder init(Directed) enableSyncAccess(GraphLevelSync) onlyStore(BothDir) build
+// or
+DirectedGraph graph = graphBuilder init(Directed) enableSyncAccess(GraphLevelSync) build
 
-# Directed Graph - store in direction only
-graphBuilder init(Directed) withSyncLevel(GraphLevelSync) withStoredDirection(In)
+// Directed Graph - store in direction only
+DirectedGraph graph = graphBuilder init(Directed) enableSyncAccess(GraphLevelSync) onlyStore(InNodes)
 
-# BiPartite Graph
-graphBuilder init(BiPartite) build
+// BiPartite Graph
+BiPartiteGraph graph = graphBuilder init(BiPartite) build
+
+### How Graphs are implemented
+```scala
+abstract class Graph
+abstract object GraphFactory
+
+abstract class UnDirectedGraph extends Graph
+object UnDirectedGraph extends GraphFactory # Factory object for UnDirectedGraph
