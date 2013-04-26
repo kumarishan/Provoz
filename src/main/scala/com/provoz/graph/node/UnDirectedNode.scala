@@ -11,16 +11,11 @@ class UnDirectedNode(
     ) extends IUnDirectedNode {
 
     require(nodeId > 0, "Node id cannot be negative")
-
     protected[graph] val nbrNodes: IntSet = new IntOpenHashSet()
 
     def this(node: UnDirectedNode) = {
         this(node.nodeId)
         this.nbrNodes.addAll(node.nbrNodes)
-    }
-
-    def this() = {
-        this(-1)
     }
 }
 
@@ -28,16 +23,12 @@ class SyncUnDirectedNode(
         nodeId: Int
     ) extends UnDirectedNode(nodeId) {
 
+    override protected[graph] val nbrNodes: IntSet = IntSets.synchronize(new IntOpenHashSet())
+
     def this(node: SyncUnDirectedNode) = {
         this(node.nodeId)
         this.nbrNodes.addAll(node.nbrNodes)
     }
-
-    def this() = {
-        this(-1)
-    }
-
-    override protected[graph] val nbrNodes: IntSet = IntSets.synchronize(new IntOpenHashSet())
 }
 
 class UnDirectedNodeIter[Node](
@@ -62,6 +53,5 @@ class UnDirectedBiDirectionalNodeIter[Node](
     }
 
     def hasPrevious = nodeIter.hasPrevious()
-
     def previous = nodeIter.previous()
 }
