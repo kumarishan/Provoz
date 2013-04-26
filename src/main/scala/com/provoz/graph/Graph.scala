@@ -1,6 +1,6 @@
 package com.provoz.graph
 
-import it.unimi.dsi.fastutil.ints.{IntSet, IntCollection}
+import it.unimi.dsi.fastutil.ints.{IntSet}
 import com.provoz.graph.node._
 
 import scala.util.Random
@@ -19,27 +19,27 @@ abstract class Graph[Node] extends Graphs.Iterable[Node] {
 
     def addEdge(fromNodeId: Int, toNodeId: Int)
     def addEdges(fromNodeId: Int, toNodeIds: Array[Int])
-    def addEdges(fromNodeId: Int, toNodeIds: IntCollection)
+    def addEdges(fromNodeId: Int, toNodeIds: IntSet)
     def addEdges(fromNodeIds: Array[Int], toNodeId: Int)
-    def addEdges(fromNodeIds: IntCollection, toNodeId: Int)
+    def addEdges(fromNodeIds: IntSet, toNodeId: Int)
 
     def getNode(nodeId: Int): Node
     def getAllNodes(): IntSet
     def getRandomNode(rand: Random): Node
 
-    def getNbrsForNode(nodeId: Int): Array[Int]
-    def getOutNodesForNode(nodeId: Int): Array[Int]
-    def getInNodesForNode(nodeId: Int): Array[Int]
+    def getNbrsForNode(nodeId: Int): IntSet
+    def getOutNodesForNode(nodeId: Int): IntSet
+    def getInNodesForNode(nodeId: Int): IntSet
 
     def removeEdge(fromNodeId: Int, toNodeId: Int)
     def removeEdges(fromNodeId: Int, toNodeIds: Array[Int])
-    def removeEdges(fromNodeId: Int, toNodeIds: IntCollection)
+    def removeEdges(fromNodeId: Int, toNodeIds: IntSet)
     def removeEdges(fromNodeIds: Array[Int], toNodeId: Int)
-    def removeEdges(fromNodeIds: IntCollection, toNodeId: Int)
+    def removeEdges(fromNodeIds: IntSet, toNodeId: Int)
 
     def removeNode(nodeId: Int)
     def removeNodes(nodeIds: Array[Int])
-    def removeNodes(nodeIds: IntCollection)
+    def removeNodes(nodeIds: IntSet)
 
     def isNode(nodeId: Int): Boolean
     def isEdge(fromNodeId: Int, toNodeId: Int): Boolean

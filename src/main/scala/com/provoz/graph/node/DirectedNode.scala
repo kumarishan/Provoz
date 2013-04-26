@@ -3,47 +3,54 @@ package com.provoz.graph.node
 import it.unimi.dsi.fastutil.ints.{Int2ObjectMap, Int2ObjectSortedMap}
 import it.unimi.dsi.fastutil.ints.{IntSortedSet, IntOpenHashSet, IntSet, IntSets}
 
-abstract class IUnDirectedNode extends INode{
-    protected[graph] val nbrNodes: IntSet
+abstract class IDirectedNode extends INode{
+    protected[graph] val inNodes: IntSet
+    protected[graph] val outNodes: IntSet
 }
 
-class UnDirectedNode(
+class DirectedNode(
         val nodeId: Int
-    ) extends IUnDirectedNode {
+    ) extends IDirectedNode {
 
     require(nodeId > 0, "Node id cannot be negative")
-    protected[graph] val nbrNodes: IntSet = new IntOpenHashSet()
+    protected[graph] val inNodes: IntSet = new IntOpenHashSet()
+    protected[graph] val outNodes: IntSet = new IntOpenHashSet()
 
-    def this(node: UnDirectedNode) = {
+    def this(node: DirectedNode) = {
         this(node.nodeId)
-        this.nbrNodes.addAll(node.nbrNodes)
+        this.inNodes.addAll(node.inNodes)
+        this.outNodes.addAll(node.outNodes)
     }
 }
 
-class SyncUnDirectedNode(
+class SyncDirectedNode(
         nodeId: Int
-    ) extends UnDirectedNode(nodeId) {
+    ) extends DirectedNode(nodeId) {
 
-    override protected[graph] val nbrNodes: IntSet =
+    override protected[graph] val inNodes: IntSet =
         IntSets.synchronize(new IntOpenHashSet())
 
-    def this(node: SyncUnDirectedNode) = {
+    override protected[graph] val outNodes: IntSet =
+        IntSets.synchronize(new IntOpenHashSet())
+
+     def this(node: SyncDirectedNode) = {
         this(node.nodeId)
-        this.nbrNodes.addAll(node.nbrNodes)
+        this.inNodes.addAll(node.inNodes)
+        this.outNodes.addAll(node.outNodes)
     }
 }
-/*
-class UnDirectedNodeIter[Node <: UnDirectedNode](
+
+/*class DirectedNodeIter[Node <: DirectedNode](
         _nodeMap: Int2ObjectMap[Node]
     ) extends NodeIter[Node](_nodeMap) {
-    //protected val nodeMap = _nodeMap
+    // protected val nodeMap = _nodeMap
     // protected val nodeIter = nodeMap.keySet().iterator()
 
     // def hasNext = nodeIter.hasNext()
     // def next = nodeMap.get(nodeIter.next())
 }
 
-class UnDirectedBiDirectionalNodeIter[Node <: UnDirectedNode](
+class DirectedBiDirectionalNodeIter[Node <: DirectedNode](
         _nodeMap: Int2ObjectSortedMap[Node],
         _startNodeId: Int
     ) extends BiDirectionalNodeIter[Node](_nodeMap, _startNodeId) {
@@ -59,9 +66,9 @@ class UnDirectedBiDirectionalNodeIter[Node <: UnDirectedNode](
 
     // def hasPrevious = nodeIter.hasPrevious()
     // def previous = nodeIter.previous()
-}
-*/
-class UnDirectedNodeIter[Node <: UnDirectedNode](
+}*/
+
+class DirectedNodeIter[Node <: DirectedNode](
         _nodeMap: Int2ObjectMap[Node]
     ) extends NodeIter[Node] {
     protected val nodeMap = _nodeMap
@@ -71,10 +78,10 @@ class UnDirectedNodeIter[Node <: UnDirectedNode](
     def next = nodeMap.get(nodeIter.next())
 }
 
-class UnDirectedBiDirectionalNodeIter[Node <: UnDirectedNode](
-        _nodeMap: Int2ObjectSortedMap[Node],
+class DirectedBiDirectionalNodeIter[Node <: DirectedNode](
+        _nodeMap: Int2ObjectMap[Node],
         private val startNodeId: Int
-    ) extends UnDirectedNodeIter[Node](_nodeMap) with BiDirectionalNodeIter[Node] {
+    ) extends DirectedNodeIter[Node](_nodeMap){
 
     require(nodeMap.size() != 0,
         "If startNodeId provided then nodeMap cannot be empty")
