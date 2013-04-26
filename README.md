@@ -9,7 +9,7 @@ Implementation Notes
 --------------------
 To begin with following basic types of graphs will be implemented
 similar to SNAP  
-Underlining implementation will closely follow SNAP  
+Underlining implementation will closely follow SNAP and Cassovary  
 Types of graphs  
 - Undirected graph
 - Directed Graph
