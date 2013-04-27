@@ -12,11 +12,6 @@ object TestGraphs {
       new SyncUnDirectedGraph[UnDirectedNode](None, None)
       new SyncUnDirectedGraph[SyncUnDirectedNode](None, None)
 
-      new UnDirectedGraph[UnDirectedNode](None, None) with UnDirectedGraphs.BiDirectionalIterable[UnDirectedNode]
-      new UnDirectedGraph[SyncUnDirectedNode](None, None) with UnDirectedGraphs.BiDirectionalIterable[SyncUnDirectedNode]
-      new SyncUnDirectedGraph[UnDirectedNode](None, None) with UnDirectedGraphs.BiDirectionalIterable[UnDirectedNode]
-      new SyncUnDirectedGraph[SyncUnDirectedNode](None, None) with UnDirectedGraphs.BiDirectionalIterable[SyncUnDirectedNode]
-
       new UnDirectedBiDirectionalGraph[UnDirectedNode](None, None)
       new SyncUnDirectedBiDirectionalGraph[UnDirectedNode](None, None)
 
@@ -30,16 +25,10 @@ object TestGraphs {
       new SyncDirectedGraph[DirectedNode](None, None)
       new SyncDirectedGraph[SyncDirectedNode](None, None)
 
-      new DirectedGraph[DirectedNode](None, None) with DirectedGraphs.BiDirectionalIterable[DirectedNode]
-      new DirectedGraph[SyncDirectedNode](None, None) with DirectedGraphs.BiDirectionalIterable[SyncDirectedNode]
-      new SyncDirectedGraph[DirectedNode](None, None) with DirectedGraphs.BiDirectionalIterable[DirectedNode]
-      new SyncDirectedGraph[SyncDirectedNode](None, None) with DirectedGraphs.BiDirectionalIterable[SyncDirectedNode]
-
       new DirectedBiDirectionalGraph[DirectedNode](None, None)
       new SyncDirectedBiDirectionalGraph[DirectedNode](None, None)
 
       new DirectedBiDirectionalGraph[SyncDirectedNode](None, None)
       new SyncDirectedBiDirectionalGraph[SyncDirectedNode](None, None)
-
     }
 }

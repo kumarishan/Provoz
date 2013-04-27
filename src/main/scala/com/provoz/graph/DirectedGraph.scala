@@ -12,26 +12,20 @@ import java.lang.UnsupportedOperationException
 
 import com.provoz.graph.node._
 
-class DirectedGraph[Node <: DirectedNode](
+abstract class ADirectedGraph[Node <: DirectedNode](
         _initialSize: Option[Int],
         _loadFactor: Option[Float]
-    ) extends Graph[Node] with DirectedGraphs.DirectedIterable[Node] {
+    ) extends Graph[Node] with Graphs.Iterable[Node]{
 
     protected val initialSize = _initialSize
     protected val loadFactor = _loadFactor
-
-    protected val nodeMap: Int2ObjectMap[Node] =
-        new Int2ObjectOpenHashMap[Node](
-            initialSize.getOrElse(Hash.DEFAULT_INITIAL_SIZE),
-            loadFactor.getOrElse(Hash.DEFAULT_LOAD_FACTOR)
-        )
 
     private var maxNId: Int = 0
     private var numEdges: Long = 0
     private var startNId: Int = 0
 
     def maxNodeId: Int = {
-        if (nodeMap.size() == 0) -1
+        if (nodeMap.size == 0) -1
         else {
             while(!isNode(maxNId)) maxNId -= 1
             maxNId
@@ -39,7 +33,7 @@ class DirectedGraph[Node <: DirectedNode](
     }
 
     def startNodeId: Int = {
-        if (nodeMap.size() == 0) -1
+        if (nodeMap.size == 0) -1
         else {
             while(!isNode(startNId)) startNId += 1
             startNId
@@ -47,23 +41,23 @@ class DirectedGraph[Node <: DirectedNode](
     }
 
     def endNodeId: Int = maxNodeId
-    def numOfNodes: Int = nodeMap.size()
+    def numOfNodes: Int = nodeMap.size
     def numOfEdges: Long = numEdges
     def suggestNextNodeId: Int = maxNodeId + 1
 
     def addOrGetNode(node: Node): Node = {
         nodeMap.put(node.nodeId, node)
         if(node.nodeId > maxNId) maxNId = node.nodeId
-        if(!node.inNodes.isEmpty()){
-            val it = node.inNodes.iterator()
-            while(it.hasNext()){
-                nodeMap.get(it.next()).outNodes.add(node.nodeId)
+        if(!node.inNodes.isEmpty){
+            val it = node.inNodes.iterator
+            while(it.hasNext){
+                nodeMap.get(it.next).outNodes.add(node.nodeId)
             }
         }
-        if(!node.outNodes.isEmpty()){
-            val it = node.outNodes.iterator()
-            while(it.hasNext()){
-                nodeMap.get(it.next()).inNodes.add(node.nodeId)
+        if(!node.outNodes.isEmpty){
+            val it = node.outNodes.iterator
+            while(it.hasNext){
+                nodeMap.get(it.next).inNodes.add(node.nodeId)
             }
         }
         node
@@ -101,7 +95,7 @@ class DirectedGraph[Node <: DirectedNode](
     }
 
     def addEdges(fromNodeId: Int, toNodeIds: IntSet){
-        addEdges(fromNodeId, toNodeIds.toIntArray())
+        addEdges(fromNodeId, toNodeIds.toIntArray)
     }
 
     def addEdges(fromNodeIds: Array[Int], toNodeId: Int){
@@ -119,12 +113,12 @@ class DirectedGraph[Node <: DirectedNode](
     }
 
     def addEdges(fromNodeIds: IntSet, toNodeId: Int){
-        addEdges(fromNodeIds.toIntArray(), toNodeId)
+        addEdges(fromNodeIds.toIntArray, toNodeId)
     }
 
     /////////////////////////////////////////////////////////////
     def getNode(nodeId: Int): Node = nodeMap.get(nodeId)
-    def getAllNodes(): IntSet = nodeMap.keySet()
+    def getAllNodes(): IntSet = nodeMap.keySet
     def getRandomNode(rand: Random): Node = {
         var randNode: Node = nodeMap.get(rand.nextInt)
         while(randNode == null) randNode = nodeMap.get(rand.nextInt)
@@ -154,14 +148,6 @@ class DirectedGraph[Node <: DirectedNode](
     }
 
     /////////////////////////////////////////////////////////////
-    def getNodeIter(): DirectedNodeIter[Node] =
-        new DirectedNodeIter[Node](this.nodeMap)
-
-    def getNodeIterFromNode(nodeId: Int): DirectedNodeIter[Node] =
-        throw new UnsupportedOperationException(
-            "getNodeIterFromNode is not support for default Directed Graph")
-
-    /////////////////////////////////////////////////////////////
     def removeEdge(fromNodeId: Int, toNodeId: Int){
         val fromNode: Node = nodeMap.get(fromNodeId)
         val toNode: Node = nodeMap.get(toNodeId)
@@ -188,8 +174,8 @@ class DirectedGraph[Node <: DirectedNode](
         val fromNode = nodeMap.get(fromNodeId)
         require(fromNode != null,
             "node with node id " + fromNodeId + " doesnot exists")
-        val it = toNodeIds.iterator()
-        while(it.hasNext()){
+        val it = toNodeIds.iterator
+        while(it.hasNext){
             val toNode = nodeMap.get(it.next)
             if(toNode != null){
                 fromNode.outNodes.remove(toNode.nodeId)
@@ -217,9 +203,9 @@ class DirectedGraph[Node <: DirectedNode](
         val  toNode = nodeMap.get(toNodeId)
         require(toNode != null,
             "node with node id " + toNodeId + " doesnot exists")
-        val it = fromNodeIds.iterator()
-        while(it.hasNext()){
-            val fromNode = nodeMap.get(it.next())
+        val it = fromNodeIds.iterator
+        while(it.hasNext){
+            val fromNode = nodeMap.get(it.next)
             if(fromNode != null){
                 fromNode.outNodes.remove(toNodeId)
                 toNode.inNodes.remove(fromNode.nodeId)
@@ -232,9 +218,9 @@ class DirectedGraph[Node <: DirectedNode](
     /////////////////////////////////////////////////////////////
     def removeNode(nodeId: Int){
         val node = nodeMap.get(nodeId)
-        val inIt = node.inNodes.iterator()
+        val inIt = node.inNodes.iterator
         while(inIt.hasNext){
-            val inNode = nodeMap.get(inIt.next())
+            val inNode = nodeMap.get(inIt.next)
             if(inNode != null){
                 inNode.outNodes.remove(nodeId)
                 numEdges -= 1
@@ -243,7 +229,7 @@ class DirectedGraph[Node <: DirectedNode](
 
         val outIt = node.inNodes.iterator()
         while(outIt.hasNext){
-            val outNode = nodeMap.get(outIt.next())
+            val outNode = nodeMap.get(outIt.next)
             if(outNode != null){
                 outNode.inNodes.remove(nodeId)
                 numEdges -= 1
@@ -257,7 +243,7 @@ class DirectedGraph[Node <: DirectedNode](
     }
 
     def removeNodes(nodeIds: IntSet){
-        val it = nodeIds.iterator()
+        val it = nodeIds.iterator
         while(it.hasNext) removeNode(it.next)
     }
 
@@ -271,44 +257,54 @@ class DirectedGraph[Node <: DirectedNode](
         else fromNode.outNodes.contains(toNodeId) && toNode.inNodes.contains(fromNodeId)
     }
 
-    def isEmpty(): Boolean = nodeMap.isEmpty()
+    def isEmpty(): Boolean = nodeMap.isEmpty
 
     /////////////////////////////////////////////////////////////
-    def clear(){ nodeMap.clear() }
+    def clear(){ nodeMap.clear }
     def defrag(){}
     def isOk(){}
-}
-
-class SyncDirectedGraph[Node <: DirectedNode](
-        _initialSize: Option[Int],
-        _loadFactor: Option[Float]
-    ) extends DirectedGraph[Node](_initialSize, _loadFactor){
-
-    override protected val nodeMap: Int2ObjectMap[Node] =
-        Int2ObjectMaps.synchronize(
-            new Int2ObjectOpenHashMap[Node](
-                initialSize.getOrElse(Hash.DEFAULT_INITIAL_SIZE),
-                loadFactor.getOrElse(Hash.DEFAULT_LOAD_FACTOR)
-            )
-        )
 }
 
 object DirectedGraphs {
     trait DirectedIterable[Node <: DirectedNode]
         extends Graphs.Iterable[Node] {
 
-        protected val nodeMap: Int2ObjectMap[Node]
         protected val initialSize: Option[Int]
         protected val loadFactor: Option[Float]
 
-        def getNodeIter(): DirectedNodeIter[Node]
-        def getNodeIterFromNode(nodeId: Int): DirectedNodeIter[Node]
+        protected val nodeMap: Int2ObjectMap[Node] =
+            new Int2ObjectOpenHashMap[Node](
+                initialSize.getOrElse(Hash.DEFAULT_INITIAL_SIZE),
+                loadFactor.getOrElse(Hash.DEFAULT_LOAD_FACTOR)
+            )
+
+        def getNodeIter(): DirectedNodeIter[Node] =
+            new DirectedNodeIter[Node](nodeMap)
+
+        def getNodeIterFromNode(nodeId: Int): DirectedNodeIter[Node] =
+            throw new UnsupportedOperationException(
+                "getNodeIterFromNode is not support for default Directed Graph")
     }
 
-    trait BiDirectionalIterable[Node <: DirectedNode]
+    trait SyncDirectedIterable[Node <: DirectedNode]
         extends DirectedIterable[Node] {
 
         override protected val nodeMap: Int2ObjectMap[Node] =
+            Int2ObjectMaps.synchronize(
+                new Int2ObjectOpenHashMap[Node](
+                    initialSize.getOrElse(Hash.DEFAULT_INITIAL_SIZE),
+                    loadFactor.getOrElse(Hash.DEFAULT_LOAD_FACTOR)
+                )
+            )
+    }
+
+    trait BiDirectionalIterable[Node <: DirectedNode]
+        extends Graphs.Iterable[Node]{
+
+        protected val initialSize: Option[Int]
+        protected val loadFactor: Option[Float]
+
+        protected val nodeMap: Int2ObjectMap[Node] =
             new Int2ObjectLinkedOpenHashMap(
                 initialSize.getOrElse(Hash.DEFAULT_INITIAL_SIZE),
                 loadFactor.getOrElse(Hash.DEFAULT_LOAD_FACTOR)
@@ -327,29 +323,43 @@ object DirectedGraphs {
                 nodeId
             )
         }
-
     }
 
     trait SyncBiDirectionalIterable[Node <: DirectedNode]
         extends BiDirectionalIterable[Node] {
 
         override protected val nodeMap: Int2ObjectMap[Node] =
-        Int2ObjectSortedMaps.synchronize(
-            new Int2ObjectLinkedOpenHashMap[Node](
-                initialSize.getOrElse(Hash.DEFAULT_INITIAL_SIZE),
-                loadFactor.getOrElse(Hash.DEFAULT_LOAD_FACTOR)
+            Int2ObjectSortedMaps.synchronize(
+                new Int2ObjectLinkedOpenHashMap[Node](
+                    initialSize.getOrElse(Hash.DEFAULT_INITIAL_SIZE),
+                    loadFactor.getOrElse(Hash.DEFAULT_LOAD_FACTOR)
+                )
             )
-        )
     }
 
-    class DirectedBiDirectionalGraph[Node <: DirectedNode](
-        _initialSize: Option[Int],
-        _loadFactor: Option[Float]
-    ) extends DirectedGraph[Node](_initialSize, _loadFactor) with BiDirectionalIterable[Node]
-
-    class SyncDirectedBiDirectionalGraph[Node <: DirectedNode](
-        _initialSize: Option[Int],
-        _loadFactor: Option[Float]
-    ) extends SyncDirectedGraph[Node](_initialSize, _loadFactor) with SyncBiDirectionalIterable[Node]
-
 }
+
+
+class DirectedGraph[Node <: DirectedNode](
+    _initialSize: Option[Int],
+    _loadFactor: Option[Float]
+) extends ADirectedGraph[Node](_initialSize, _loadFactor)
+  with DirectedGraphs.DirectedIterable[Node]
+
+class SyncDirectedGraph[Node <: DirectedNode](
+    _initialSize: Option[Int],
+    _loadFactor: Option[Float]
+) extends ADirectedGraph[Node](_initialSize, _loadFactor)
+  with DirectedGraphs.SyncDirectedIterable[Node]
+
+class DirectedBiDirectionalGraph[Node <: DirectedNode](
+    _initialSize: Option[Int],
+    _loadFactor: Option[Float]
+) extends ADirectedGraph[Node](_initialSize, _loadFactor)
+  with DirectedGraphs.BiDirectionalIterable[Node]
+
+class SyncDirectedBiDirectionalGraph[Node <: DirectedNode](
+    _initialSize: Option[Int],
+    _loadFactor: Option[Float]
+) extends ADirectedGraph[Node](_initialSize, _loadFactor)
+  with DirectedGraphs.SyncBiDirectionalIterable[Node]

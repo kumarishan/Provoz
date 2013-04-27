@@ -32,59 +32,32 @@ class SyncUnDirectedNode(
         this.nbrNodes.addAll(node.nbrNodes)
     }
 }
-/*
+
 class UnDirectedNodeIter[Node <: UnDirectedNode](
         _nodeMap: Int2ObjectMap[Node]
-    ) extends NodeIter[Node](_nodeMap) {
-    //protected val nodeMap = _nodeMap
-    // protected val nodeIter = nodeMap.keySet().iterator()
+    ) extends NodeIter[Node]{
 
-    // def hasNext = nodeIter.hasNext()
-    // def next = nodeMap.get(nodeIter.next())
+    override protected val nodeMap = _nodeMap
+    override protected val nodeIter = _nodeMap.keySet().iterator
 }
 
 class UnDirectedBiDirectionalNodeIter[Node <: UnDirectedNode](
         _nodeMap: Int2ObjectSortedMap[Node],
         _startNodeId: Int
-    ) extends BiDirectionalNodeIter[Node](_nodeMap, _startNodeId) {
+    ) extends BiDirectionalNodeIter[Node]{
 
-    // require(nodeMap.size() != 0,
-    //     "If startNodeId provided then nodeMap cannot be empty")
-    // override protected val nodeIter =
-    //     nodeMap.keySet().asInstanceOf[IntSortedSet].iterator(startNodeId)
-
-    def this(nodeMap: Int2ObjectSortedMap[Node]){
-        this(nodeMap, nodeMap.keySet().asInstanceOf[IntSortedSet].firstInt())
-    }
-
-    // def hasPrevious = nodeIter.hasPrevious()
-    // def previous = nodeIter.previous()
-}
-*/
-class UnDirectedNodeIter[Node <: UnDirectedNode](
-        _nodeMap: Int2ObjectMap[Node]
-    ) extends NodeIter[Node] {
-    protected val nodeMap = _nodeMap
-    protected val nodeIter = nodeMap.keySet().iterator()
-
-    def hasNext = nodeIter.hasNext()
-    def next = nodeMap.get(nodeIter.next())
-}
-
-class UnDirectedBiDirectionalNodeIter[Node <: UnDirectedNode](
-        _nodeMap: Int2ObjectSortedMap[Node],
-        private val startNodeId: Int
-    ) extends UnDirectedNodeIter[Node](_nodeMap) with BiDirectionalNodeIter[Node] {
-
-    require(nodeMap.size() != 0,
+    require(_nodeMap.size() != 0,
         "If startNodeId provided then nodeMap cannot be empty")
+    require(_nodeMap.containsKey(_startNodeId),
+        "Node map doesnot contain the node id " + _startNodeId)
+
+    override protected val startNodeId = _startNodeId
+    override protected val nodeMap = _nodeMap
     override protected val nodeIter =
-        nodeMap.keySet().asInstanceOf[IntSortedSet].iterator(startNodeId)
+        _nodeMap.keySet().asInstanceOf[IntSortedSet].iterator(_startNodeId)
 
     def this(nodeMap: Int2ObjectSortedMap[Node]){
-        this(nodeMap, nodeMap.keySet().asInstanceOf[IntSortedSet].firstInt())
+        this(nodeMap, nodeMap.keySet().asInstanceOf[IntSortedSet].firstInt)
     }
 
-    def hasPrevious = nodeIter.hasPrevious()
-    def previous = nodeIter.previous()
 }

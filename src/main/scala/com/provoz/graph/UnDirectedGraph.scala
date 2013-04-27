@@ -11,26 +11,20 @@ import java.lang.UnsupportedOperationException
 
 import com.provoz.graph.node._
 
-class UnDirectedGraph[Node <: UnDirectedNode](
+abstract class AUnDirectedGraph[Node <: UnDirectedNode](
         _initialSize: Option[Int],
         _loadFactor: Option[Float]
-    ) extends Graph[Node] with UnDirectedGraphs.UnDirectedIterable[Node] {
+    ) extends Graph[Node] with Graphs.Iterable[Node]{
 
     protected val initialSize = _initialSize
     protected val loadFactor = _loadFactor
-
-    protected val nodeMap: Int2ObjectMap[Node] =
-        new Int2ObjectOpenHashMap[Node](
-            initialSize.getOrElse(Hash.DEFAULT_INITIAL_SIZE),
-            loadFactor.getOrElse(Hash.DEFAULT_LOAD_FACTOR)
-        )
 
     private var maxNId: Int = 0
     private var numEdges: Long = 0
     private var startNId: Int = 0
 
     def maxNodeId: Int = {
-        if (nodeMap.size() == 0) -1
+        if (nodeMap.size == 0) -1
         else {
             while(!isNode(maxNId)) maxNId -= 1
             maxNId
@@ -38,7 +32,7 @@ class UnDirectedGraph[Node <: UnDirectedNode](
     }
 
     def startNodeId: Int = {
-        if (nodeMap.size() == 0) -1
+        if (nodeMap.size == 0) -1
         else {
             while(!isNode(startNId)) startNId += 1
             startNId
@@ -46,7 +40,7 @@ class UnDirectedGraph[Node <: UnDirectedNode](
     }
 
     def endNodeId: Int = maxNodeId
-    def numOfNodes: Int = nodeMap.size()
+    def numOfNodes: Int = nodeMap.size
     def numOfEdges: Long = numEdges
     def suggestNextNodeId: Int = maxNodeId + 1
 
@@ -54,10 +48,10 @@ class UnDirectedGraph[Node <: UnDirectedNode](
     def addOrGetNode(node: Node): Node = {
         nodeMap.put(node.nodeId, node)
         if(node.nodeId > maxNId) maxNId = node.nodeId
-        if(!node.nbrNodes.isEmpty()){
-            val it = node.nbrNodes.iterator()
-            while(it.hasNext()){
-                nodeMap.get(it.next()).nbrNodes.add(node.nodeId)
+        if(!node.nbrNodes.isEmpty){
+            val it = node.nbrNodes.iterator
+            while(it.hasNext){
+                nodeMap.get(it.next).nbrNodes.add(node.nodeId)
             }
         }
         node
@@ -98,9 +92,9 @@ class UnDirectedGraph[Node <: UnDirectedNode](
         val fromNode = nodeMap.get(fromNodeId)
         require(fromNode != null,
             "Node with node id " + fromNodeId + " doesnot exists")
-        val it = toNodeIds.iterator()
-        while(it.hasNext()){
-            val toNode = nodeMap.get(it.next())
+        val it = toNodeIds.iterator
+        while(it.hasNext){
+            val toNode = nodeMap.get(it.next)
             if (toNode != null){
                 toNode.nbrNodes.add(fromNodeId)
                 fromNode.nbrNodes.add(toNode.nodeId)
@@ -118,7 +112,7 @@ class UnDirectedGraph[Node <: UnDirectedNode](
 
     /////////////////////////////////////////////////////////////
     def getNode(nodeId: Int): Node = nodeMap.get(nodeId)
-    def getAllNodes(): IntSet = nodeMap.keySet()
+    def getAllNodes(): IntSet = nodeMap.keySet
     def getRandomNode(rand: Random): Node = {
         var randNode = nodeMap.get(rand.nextInt)
         while(randNode == null) randNode = nodeMap.get(rand.nextInt)
@@ -135,14 +129,6 @@ class UnDirectedGraph[Node <: UnDirectedNode](
 
     def getOutNodesForNode(nodeId: Int): IntSet = getNbrsForNode(nodeId)
     def getInNodesForNode(nodeId: Int): IntSet = getNbrsForNode(nodeId)
-
-    /////////////////////////////////////////////////////////////
-    def getNodeIter(): UnDirectedNodeIter[Node] =
-        new UnDirectedNodeIter[Node](this.nodeMap)
-
-    def getNodeIterFromNode(nodeId: Int): UnDirectedNodeIter[Node] =
-        throw new UnsupportedOperationException(
-            "getNodeIterFromNode is not support for default UnDirected Graph")
 
     /////////////////////////////////////////////////////////////
     def removeEdge(fromNodeId: Int, toNodeId: Int){
@@ -173,9 +159,9 @@ class UnDirectedGraph[Node <: UnDirectedNode](
         val fromNode = nodeMap.get(fromNodeId)
         require(fromNode != null,
             "node with node id " + fromNodeId + " doesnot exists")
-        val it = toNodeIds.iterator()
-        while(it.hasNext()){
-            val toNode = nodeMap.get(it.next())
+        val it = toNodeIds.iterator
+        while(it.hasNext){
+            val toNode = nodeMap.get(it.next)
             if (toNode != null){
                 toNode.nbrNodes.remove(fromNodeId)
                 numEdges -= 1
@@ -195,9 +181,9 @@ class UnDirectedGraph[Node <: UnDirectedNode](
     def removeNode(nodeId: Int){
         val node = nodeMap.get(nodeId)
         if (node != null){
-            val iterator = node.nbrNodes.iterator()
-            while(iterator.hasNext()) {
-                val nbrNode = nodeMap.get(iterator.nextInt())
+            val iterator = node.nbrNodes.iterator
+            while(iterator.hasNext) {
+                val nbrNode = nodeMap.get(iterator.nextInt)
                 if (nbrNode != null){
                     nbrNode.nbrNodes.remove(nodeId)
                     numEdges -= 1
@@ -212,8 +198,8 @@ class UnDirectedGraph[Node <: UnDirectedNode](
     }
 
     def removeNodes(nodeIds: IntSet){
-        val it = nodeIds.iterator()
-        while(it.hasNext()) removeNode(it.nextInt())
+        val it = nodeIds.iterator
+        while(it.hasNext) removeNode(it.nextInt)
     }
 
     /////////////////////////////////////////////////////////////
@@ -226,42 +212,54 @@ class UnDirectedGraph[Node <: UnDirectedNode](
         else fromNode.nbrNodes.contains(toNodeId)
     }
 
-    def isEmpty(): Boolean = nodeMap.isEmpty()
+    def isEmpty(): Boolean = nodeMap.isEmpty
 
     /////////////////////////////////////////////////////////////
-    def clear(){ nodeMap.clear() }
+    def clear(){ nodeMap.clear }
     def defrag(){}
     def isOk(){}
-}
-
-class SyncUnDirectedGraph[Node <: UnDirectedNode](
-        _initialSize: Option[Int],
-        _loadFactor: Option[Float]
-    ) extends UnDirectedGraph[Node](_initialSize, _loadFactor){
-
-    override protected val nodeMap: Int2ObjectMap[Node] =
-        Int2ObjectMaps.synchronize(
-            new Int2ObjectOpenHashMap[Node](
-                initialSize.getOrElse(Hash.DEFAULT_INITIAL_SIZE),
-                loadFactor.getOrElse(Hash.DEFAULT_LOAD_FACTOR)
-            )
-        )
 }
 
 object UnDirectedGraphs {
     trait UnDirectedIterable[Node <: UnDirectedNode]
         extends Graphs.Iterable[Node] {
 
-        protected val nodeMap: Int2ObjectMap[Node]
         protected val initialSize: Option[Int]
         protected val loadFactor: Option[Float]
 
-        def getNodeIter(): UnDirectedNodeIter[Node]
-        def getNodeIterFromNode(nodeId: Int): UnDirectedNodeIter[Node]
+        protected val nodeMap: Int2ObjectMap[Node] =
+            new Int2ObjectOpenHashMap[Node](
+                initialSize.getOrElse(Hash.DEFAULT_INITIAL_SIZE),
+                loadFactor.getOrElse(Hash.DEFAULT_LOAD_FACTOR)
+            )
+
+        def getNodeIter(): UnDirectedNodeIter[Node] =
+            new UnDirectedNodeIter[Node](nodeMap)
+
+        def getNodeIterFromNode(nodeId: Int): UnDirectedNodeIter[Node] =
+            throw new UnsupportedOperationException(
+                "getNodeIterFromNode is not support for default UnDirected Graph")
     }
 
-    trait BiDirectionalIterable[Node <: UnDirectedNode] extends UnDirectedIterable[Node] {
+    trait SyncUnDirectedIterable[Node <: UnDirectedNode]
+        extends UnDirectedIterable[Node] {
+
         override protected val nodeMap: Int2ObjectMap[Node] =
+            Int2ObjectMaps.synchronize(
+                new Int2ObjectOpenHashMap[Node](
+                    initialSize.getOrElse(Hash.DEFAULT_INITIAL_SIZE),
+                    loadFactor.getOrElse(Hash.DEFAULT_LOAD_FACTOR)
+                )
+            )
+    }
+
+    trait BiDirectionalIterable[Node <: UnDirectedNode]
+        extends Graphs.Iterable[Node] {
+
+        protected val initialSize: Option[Int]
+        protected val loadFactor: Option[Float]
+
+        protected val nodeMap: Int2ObjectMap[Node] =
             new Int2ObjectLinkedOpenHashMap(
                 initialSize.getOrElse(Hash.DEFAULT_INITIAL_SIZE),
                 loadFactor.getOrElse(Hash.DEFAULT_LOAD_FACTOR)
@@ -283,7 +281,9 @@ object UnDirectedGraphs {
 
     }
 
-    trait SyncBiDirectionalIterable[Node <: UnDirectedNode] extends BiDirectionalIterable[Node] {
+    trait SyncBiDirectionalIterable[Node <: UnDirectedNode]
+        extends BiDirectionalIterable[Node] {
+
         override protected val nodeMap: Int2ObjectMap[Node] =
         Int2ObjectSortedMaps.synchronize(
             new Int2ObjectLinkedOpenHashMap[Node](
@@ -292,36 +292,28 @@ object UnDirectedGraphs {
             )
         )
     }
-
-    class UnDirectedBiDirectionalGraph[Node <: UnDirectedNode](
-        _initialSize: Option[Int],
-        _loadFactor: Option[Float]
-    ) extends UnDirectedGraph[Node](_initialSize, _loadFactor) with BiDirectionalIterable[Node]
-
-    class SyncUnDirectedBiDirectionalGraph[Node <: UnDirectedNode](
-        _initialSize: Option[Int],
-        _loadFactor: Option[Float]
-    ) extends SyncUnDirectedGraph[Node](_initialSize, _loadFactor) with SyncBiDirectionalIterable[Node]
-
 }
 
-object UnDirectedGraph {
+class UnDirectedGraph[Node <: UnDirectedNode](
+    _initialSize: Option[Int],
+    _loadFactor: Option[Float]
+) extends AUnDirectedGraph[Node](_initialSize, _loadFactor)
+  with UnDirectedGraphs.UnDirectedIterable[Node]
 
-    def apply(
-        syncAccess: Option[SyncAccess],
-        initialSize: Option[Int],
-        loadFactor: Option[Float]) = {
+class SyncUnDirectedGraph[Node <: UnDirectedNode](
+    _initialSize: Option[Int],
+    _loadFactor: Option[Float]
+) extends AUnDirectedGraph[Node](_initialSize, _loadFactor)
+  with UnDirectedGraphs.SyncUnDirectedIterable[Node]
 
-            syncAccess.getOrElse(NoSync()) match {
-                case NodeAccessSync() =>
-                    new UnDirectedGraph[SyncUnDirectedNode](initialSize, loadFactor)
-                case GraphAccessSync() =>
-                    new UnDirectedGraph[UnDirectedNode](initialSize, loadFactor)
-                case GraphNNodeAccessSync() =>
-                    new UnDirectedGraph[SyncUnDirectedNode](initialSize, loadFactor)
-                case NoSync() =>
-                    new UnDirectedGraph[UnDirectedNode](initialSize, loadFactor)
-            }
-    }
+class UnDirectedBiDirectionalGraph[Node <: UnDirectedNode](
+    _initialSize: Option[Int],
+    _loadFactor: Option[Float]
+) extends AUnDirectedGraph[Node](_initialSize, _loadFactor)
+  with UnDirectedGraphs.BiDirectionalIterable[Node]
 
-}
+class SyncUnDirectedBiDirectionalGraph[Node <: UnDirectedNode](
+    _initialSize: Option[Int],
+    _loadFactor: Option[Float]
+) extends AUnDirectedGraph[Node](_initialSize, _loadFactor)
+  with UnDirectedGraphs.SyncBiDirectionalIterable[Node]
