@@ -2,23 +2,22 @@ package com.provoz.graph
 
 import it.unimi.dsi.fastutil.ints.{IntSet, IntIterator}
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
-import it.unimi.dsi.fastutil.ints.{Int2ObjectSortedMaps, Int2ObjectSortedMap, Int2ObjectLinkedOpenHashMap}
-import it.unimi.dsi.fastutil.ints.{Int2ObjectMaps, Int2ObjectMap, Int2ObjectOpenHashMap}
+import it.unimi.dsi.fastutil.ints.{Int2ObjectSortedMap, Int2ObjectLinkedOpenHashMap}
+import it.unimi.dsi.fastutil.ints.{Int2ObjectMap, Int2ObjectOpenHashMap}
 import it.unimi.dsi.fastutil.Hash
 
 import scala.util.Random
-
-import java.lang.UnsupportedOperationException
 
 import com.provoz.graph.node._
 
 abstract class ADirectedGraph[Node <: DirectedNode](
         _initialSize: Option[Int],
         _loadFactor: Option[Float]
-    ) extends Graph[Node] with Graphs.Iterable[Node]{
+    ) extends Graph[Node]
+      with Graphs.ADataStore[Node] {
 
-    protected val initialSize = _initialSize
-    protected val loadFactor = _loadFactor
+    override protected val initialSize = _initialSize
+    override protected val loadFactor = _loadFactor
 
     private var maxNId: Int = 0
     private var numEdges: Long = 0
@@ -266,49 +265,17 @@ abstract class ADirectedGraph[Node <: DirectedNode](
 }
 
 object DirectedGraphs {
+
     trait DirectedIterable[Node <: DirectedNode]
         extends Graphs.Iterable[Node] {
-
-        protected val initialSize: Option[Int]
-        protected val loadFactor: Option[Float]
-
-        protected val nodeMap: Int2ObjectMap[Node] =
-            new Int2ObjectOpenHashMap[Node](
-                initialSize.getOrElse(Hash.DEFAULT_INITIAL_SIZE),
-                loadFactor.getOrElse(Hash.DEFAULT_LOAD_FACTOR)
-            )
 
         def getNodeIter(): DirectedNodeIter[Node] =
             new DirectedNodeIter[Node](nodeMap)
 
-        def getNodeIterFromNode(nodeId: Int): DirectedNodeIter[Node] =
-            throw new UnsupportedOperationException(
-                "getNodeIterFromNode is not support for default Directed Graph")
-    }
-
-    trait SyncDirectedIterable[Node <: DirectedNode]
-        extends DirectedIterable[Node] {
-
-        override protected val nodeMap: Int2ObjectMap[Node] =
-            Int2ObjectMaps.synchronize(
-                new Int2ObjectOpenHashMap[Node](
-                    initialSize.getOrElse(Hash.DEFAULT_INITIAL_SIZE),
-                    loadFactor.getOrElse(Hash.DEFAULT_LOAD_FACTOR)
-                )
-            )
     }
 
     trait BiDirectionalIterable[Node <: DirectedNode]
-        extends Graphs.Iterable[Node]{
-
-        protected val initialSize: Option[Int]
-        protected val loadFactor: Option[Float]
-
-        protected val nodeMap: Int2ObjectMap[Node] =
-            new Int2ObjectLinkedOpenHashMap(
-                initialSize.getOrElse(Hash.DEFAULT_INITIAL_SIZE),
-                loadFactor.getOrElse(Hash.DEFAULT_LOAD_FACTOR)
-            )
+        extends Graphs.BiDirectionalIterable[Node]{
 
         override def getNodeIter(): DirectedBiDirectionalNodeIter[Node] = {
             new DirectedBiDirectionalNodeIter[Node](
@@ -325,18 +292,6 @@ object DirectedGraphs {
         }
     }
 
-    trait SyncBiDirectionalIterable[Node <: DirectedNode]
-        extends BiDirectionalIterable[Node] {
-
-        override protected val nodeMap: Int2ObjectMap[Node] =
-            Int2ObjectSortedMaps.synchronize(
-                new Int2ObjectLinkedOpenHashMap[Node](
-                    initialSize.getOrElse(Hash.DEFAULT_INITIAL_SIZE),
-                    loadFactor.getOrElse(Hash.DEFAULT_LOAD_FACTOR)
-                )
-            )
-    }
-
 }
 
 
@@ -345,21 +300,25 @@ class DirectedGraph[Node <: DirectedNode](
     _loadFactor: Option[Float]
 ) extends ADirectedGraph[Node](_initialSize, _loadFactor)
   with DirectedGraphs.DirectedIterable[Node]
+  with Graphs.DataStore[Node]
 
 class SyncDirectedGraph[Node <: DirectedNode](
     _initialSize: Option[Int],
     _loadFactor: Option[Float]
 ) extends ADirectedGraph[Node](_initialSize, _loadFactor)
-  with DirectedGraphs.SyncDirectedIterable[Node]
+  with DirectedGraphs.DirectedIterable[Node]
+  with Graphs.SyncDataStore[Node]
 
 class DirectedBiDirectionalGraph[Node <: DirectedNode](
     _initialSize: Option[Int],
     _loadFactor: Option[Float]
 ) extends ADirectedGraph[Node](_initialSize, _loadFactor)
   with DirectedGraphs.BiDirectionalIterable[Node]
+  with Graphs.BiDirectionalDataStore[Node]
 
 class SyncDirectedBiDirectionalGraph[Node <: DirectedNode](
     _initialSize: Option[Int],
     _loadFactor: Option[Float]
 ) extends ADirectedGraph[Node](_initialSize, _loadFactor)
-  with DirectedGraphs.SyncBiDirectionalIterable[Node]
+  with DirectedGraphs.BiDirectionalIterable[Node]
+  with Graphs.SyncBiDirectionalDataStore[Node]

@@ -7,14 +7,13 @@ import it.unimi.dsi.fastutil.Hash
 
 import scala.util.Random
 
-import java.lang.UnsupportedOperationException
-
 import com.provoz.graph.node._
 
 abstract class AUnDirectedGraph[Node <: UnDirectedNode](
         _initialSize: Option[Int],
         _loadFactor: Option[Float]
-    ) extends Graph[Node] with Graphs.Iterable[Node]{
+    ) extends Graph[Node]
+      with Graphs.ADataStore[Node]{
 
     protected val initialSize = _initialSize
     protected val loadFactor = _loadFactor
@@ -221,49 +220,19 @@ abstract class AUnDirectedGraph[Node <: UnDirectedNode](
 }
 
 object UnDirectedGraphs {
+
+    // Iterable Traits for UnDirectedGraphs
+
     trait UnDirectedIterable[Node <: UnDirectedNode]
         extends Graphs.Iterable[Node] {
-
-        protected val initialSize: Option[Int]
-        protected val loadFactor: Option[Float]
-
-        protected val nodeMap: Int2ObjectMap[Node] =
-            new Int2ObjectOpenHashMap[Node](
-                initialSize.getOrElse(Hash.DEFAULT_INITIAL_SIZE),
-                loadFactor.getOrElse(Hash.DEFAULT_LOAD_FACTOR)
-            )
 
         def getNodeIter(): UnDirectedNodeIter[Node] =
             new UnDirectedNodeIter[Node](nodeMap)
 
-        def getNodeIterFromNode(nodeId: Int): UnDirectedNodeIter[Node] =
-            throw new UnsupportedOperationException(
-                "getNodeIterFromNode is not support for default UnDirected Graph")
-    }
-
-    trait SyncUnDirectedIterable[Node <: UnDirectedNode]
-        extends UnDirectedIterable[Node] {
-
-        override protected val nodeMap: Int2ObjectMap[Node] =
-            Int2ObjectMaps.synchronize(
-                new Int2ObjectOpenHashMap[Node](
-                    initialSize.getOrElse(Hash.DEFAULT_INITIAL_SIZE),
-                    loadFactor.getOrElse(Hash.DEFAULT_LOAD_FACTOR)
-                )
-            )
     }
 
     trait BiDirectionalIterable[Node <: UnDirectedNode]
-        extends Graphs.Iterable[Node] {
-
-        protected val initialSize: Option[Int]
-        protected val loadFactor: Option[Float]
-
-        protected val nodeMap: Int2ObjectMap[Node] =
-            new Int2ObjectLinkedOpenHashMap(
-                initialSize.getOrElse(Hash.DEFAULT_INITIAL_SIZE),
-                loadFactor.getOrElse(Hash.DEFAULT_LOAD_FACTOR)
-            )
+        extends Graphs.BiDirectionalIterable[Node] {
 
         override def getNodeIter(): UnDirectedBiDirectionalNodeIter[Node] = {
             new UnDirectedBiDirectionalNodeIter[Node](
@@ -281,17 +250,6 @@ object UnDirectedGraphs {
 
     }
 
-    trait SyncBiDirectionalIterable[Node <: UnDirectedNode]
-        extends BiDirectionalIterable[Node] {
-
-        override protected val nodeMap: Int2ObjectMap[Node] =
-        Int2ObjectSortedMaps.synchronize(
-            new Int2ObjectLinkedOpenHashMap[Node](
-                initialSize.getOrElse(Hash.DEFAULT_INITIAL_SIZE),
-                loadFactor.getOrElse(Hash.DEFAULT_LOAD_FACTOR)
-            )
-        )
-    }
 }
 
 class UnDirectedGraph[Node <: UnDirectedNode](
@@ -299,21 +257,25 @@ class UnDirectedGraph[Node <: UnDirectedNode](
     _loadFactor: Option[Float]
 ) extends AUnDirectedGraph[Node](_initialSize, _loadFactor)
   with UnDirectedGraphs.UnDirectedIterable[Node]
+  with Graphs.DataStore[Node]
 
 class SyncUnDirectedGraph[Node <: UnDirectedNode](
     _initialSize: Option[Int],
     _loadFactor: Option[Float]
 ) extends AUnDirectedGraph[Node](_initialSize, _loadFactor)
-  with UnDirectedGraphs.SyncUnDirectedIterable[Node]
+  with UnDirectedGraphs.UnDirectedIterable[Node]
+  with Graphs.SyncDataStore[Node]
 
 class UnDirectedBiDirectionalGraph[Node <: UnDirectedNode](
     _initialSize: Option[Int],
     _loadFactor: Option[Float]
 ) extends AUnDirectedGraph[Node](_initialSize, _loadFactor)
   with UnDirectedGraphs.BiDirectionalIterable[Node]
+  with Graphs.BiDirectionalDataStore[Node]
 
 class SyncUnDirectedBiDirectionalGraph[Node <: UnDirectedNode](
     _initialSize: Option[Int],
     _loadFactor: Option[Float]
 ) extends AUnDirectedGraph[Node](_initialSize, _loadFactor)
-  with UnDirectedGraphs.SyncBiDirectionalIterable[Node]
+  with UnDirectedGraphs.BiDirectionalIterable[Node]
+  with Graphs.SyncBiDirectionalDataStore[Node]
