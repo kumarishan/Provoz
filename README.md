@@ -33,33 +33,3 @@ com.provoz.grapg.node.Node
 Node can have synchronized access for addition/deletion of edges  
 Graph can have synchronized access for addition/deletion of nodes  
 Both synchronization is enabled separately using Type-Safe Builder Pattern  
-
-```scala
-
-// Undirected Graph
-UnDirectedGraph graph = graphBuilder init(UnDirected) build
-
-// Synchronized Undirected Graph
-UnDirectedGraph graph = graphBuilder init(UnDirected) enableSyncAccess(GrapLevelSync) build
-
-// Synchronized Undirected Graph with Synchronized Node
-UnDirectedGraph graph = graphBuilder init(UnDirected) enableSyncAccess(GraphNodeLevelSync) build
-
-// Synchronized Directed Graph - store both direction (default)
-DirectedGraph graph = graphBuilder init(Directed) enableSyncAccess(GraphLevelSync) onlyStore(BothDir) build
-// or
-DirectedGraph graph = graphBuilder init(Directed) enableSyncAccess(GraphLevelSync) build
-
-// Directed Graph - store in direction only
-DirectedGraph graph = graphBuilder init(Directed) enableSyncAccess(GraphLevelSync) onlyStore(InNodes)
-
-// BiPartite Graph
-BiPartiteGraph graph = graphBuilder init(BiPartite) build
-
-### How Graphs are implemented
-```scala
-abstract class Graph
-abstract object GraphFactory
-
-abstract class UnDirectedGraph extends Graph
-object UnDirectedGraph extends GraphFactory # Factory object for UnDirectedGraph

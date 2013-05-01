@@ -9,7 +9,7 @@ import com.provoz.graph.node._
 
 import scala.util.Random
 
-abstract class Graph[Node <: INode] {
+abstract class IGraph[Node <: INode] {
 
     def maxNodeId: Int
     def startNodeId: Int

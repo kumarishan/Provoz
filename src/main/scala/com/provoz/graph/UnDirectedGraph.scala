@@ -12,7 +12,7 @@ import com.provoz.graph.node._
 abstract class AUnDirectedGraph[Node <: UnDirectedNode](
         _initialSize: Option[Int],
         _loadFactor: Option[Float]
-    ) extends Graph[Node]
+    ) extends IGraph[Node]
       with Graphs.ADataStore[Node]{
 
     protected val initialSize = _initialSize
