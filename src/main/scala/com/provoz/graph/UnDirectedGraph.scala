@@ -113,8 +113,8 @@ abstract class AUnDirectedGraph[Node <: UnDirectedNode](
     def getNode(nodeId: Int): Node = nodeMap.get(nodeId)
     def getAllNodes(): IntSet = nodeMap.keySet
     def getRandomNode(rand: Random): Node = {
-        var randNode = nodeMap.get(rand.nextInt)
-        while(randNode == null) randNode = nodeMap.get(rand.nextInt)
+        var randNode = nodeMap.get(rand.nextInt(maxNId))
+        while(randNode == null) randNode = nodeMap.get(rand.nextInt(maxNId))
         randNode
     }
 

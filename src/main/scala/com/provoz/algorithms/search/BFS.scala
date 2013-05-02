@@ -1,21 +1,28 @@
 package com.provoz.algorithms.search
 
 import it.unimi.dsi.fastutil.ints.{IntHeapPriorityQueue, Int2IntOpenHashMap}
+import it.unimi.dsi.fastutil.ints.{IntArrayList, IntArrays}
 
 import com.provoz.graph._
 import com.provoz.graph.node._
 
+import scala.util.Random
+
 class BreadthFirstSearch[Node <: INode, Graph <: IGraph[Node]](
-        private val graph: Graph
-    ){
+        protected val graph: Graph ){
     require(graph.numOfNodes > 0, "Empty graph passed")
 
-    private val queue = new IntHeapPriorityQueue(graph.numOfNodes)
-    private val nodeToDistMap = new Int2IntOpenHashMap()
-    private var startNodeId = 0
+    protected[algorithms] val queue = new IntHeapPriorityQueue(graph.numOfNodes)
+    protected[algorithms] val nodeToDistMap = new Int2IntOpenHashMap()
+    protected var startNodeId = 0
 
 
-    def search(startNId: Int, targetNodeId: Int = -1, distLimit: Int = Int.MaxValue, followDir: FollowDir): Int = {
+    def search(
+        startNId: Int,
+        targetNodeId: Int = -1,
+        distLimit: Int = Int.MaxValue,
+        followDir: FollowDir): Int = {
+
         def nodeVisitor(parentNId: Int, visitedNId: Int, distFromSrc: Int): Boolean = {
             if(visitedNId == targetNodeId || distFromSrc >= distLimit){
                 return true
@@ -25,14 +32,17 @@ class BreadthFirstSearch[Node <: INode, Graph <: IGraph[Node]](
         search(startNId, nodeVisitor _, followDir)
     }
 
-    def search(startNId: Int, nodeVisitor: (Int, Int, Int) => Boolean, followDir: FollowDir): Int = {
+    def search(
+        startNId: Int,
+        nodeVisitor: (Int, Int, Int) => Boolean,
+        followDir: FollowDir): Int = {
 
         startNodeId = startNId
         require(graph.isNode(startNodeId), "start node id is not in graph")
 
         nodeToDistMap.clear()
         queue.clear()
-        nodeToDistMap.add(startNodeId, 0) // mark source
+        nodeToDistMap.put(startNodeId, 0) // mark source
         queue.enqueue(startNodeId) //enque source to Q
 
         var maxDist = 0
@@ -40,56 +50,31 @@ class BreadthFirstSearch[Node <: INode, Graph <: IGraph[Node]](
         while(!queue.isEmpty()){ // while Q is not empty
             val nId = queue.dequeueInt() // dequeue an item from the Q
             val dist = nodeToDistMap.get(nId)
-            followDir match {
-                case FollowInDeg => {
-                    val inNodeIter = graph.getInNodesForNode(nId).iterator
-                    while(inNodeIter.hasNext){ // for each in-edge e
-                        val inNodeId = inNodeIter.next // get the node on other side of e
-                        if(!nodeToDistMap.containsKey(inNodeId)){ // if other node is not marked
-                            nodeToDistMap.add(inNodeId, dist + 1) // mark the node
-                            maxDist = if (maxDist > dist + 1) maxDist
-                                      else dist + 1 // update dist from the source
-                            if(nodeVisitor(nId, inNodeId, dist + 1)){
-                                return maxDist
-                            } // check for condition to continue
-                            queue.enqueue(inNodeId) // enqueue the node
-                        }
+            val adjNodeIter = followDir match {
+                case FollowInDeg => graph.getInNodesForNode(nId).iterator
+                case FollowOutDeg => graph.getOutNodesForNode(nId).iterator
+                case FollowBoth => graph.getNbrsForNode(nId).iterator
+            }
+            while(adjNodeIter.hasNext){
+                val adjNodeId: Int = adjNodeIter.next
+                if(!nodeToDistMap.containsKey(adjNodeId)){
+                    nodeToDistMap.put(adjNodeId, dist + 1)
+                    maxDist = if (maxDist > dist + 1) maxDist
+                              else dist + 1
+                    if(nodeVisitor(nId, adjNodeId, dist + 1)){
+                        return maxDist
                     }
-                }
-                case FollowOutDeg => {
-                    val outNodeIter = graph.getOutNodesForNode(nId).iterator
-                    while(outNodeIter.hasNext){
-                        val outNodeId = outNodeIter.next
-                        if(!nodeToDistMap.containsKey(outNodeId)){
-                            nodeToDistMap.add(outNodeId, dist + 1)
-                            maxDist = if (maxDist > dist + 1) maxDist
-                                      else dist + 1
-                            if(nodeVisitor(nId, outNodeId, dist + 1)){
-                                return maxDist
-                            }
-                            queue.enqueue(outNodeId)
-                        }
-                    }
-                }
-                case FollowBoth => {
-                    val nbrsNodeIter = graph.getNbrsForNode(nId).iterator
-                    while(nbrsNodeIter.hasNext){
-                        val nbrNodeId = nbrsNodeIter.next
-                        if(!nodeToDistMap.containsKey(nbrNodeId)){
-                            nodeToDistMap.add(nbrNodeId, dist + 1)
-                            maxDist = if (maxDist > dist + 1) maxDist
-                                      else dist + 1
-                            if(nodeVisitor(nId, nbrNodeId, dist + 1)){
-                                return maxDist
-                            }
-                            queue.enqueue(nbrNodeId)
-                        }
-                    }
+                    queue.enqueue(adjNodeId)
                 }
             }
-
         }
+
         return maxDist
     }
 
+    def getHopsFor(destNId: Int): Int = {
+        val dist = nodeToDistMap.get(destNId)
+        if (dist != 0) return dist
+        else return -1
+    }
 }
