@@ -5,6 +5,8 @@ import node._
 import UnDirectedGraphs._
 import DirectedGraphs._
 
+import scala.util.Random
+
 object TestGraphs {
     def main(args: Array[String]) = {
       // UnDirected Graphs
@@ -38,11 +40,15 @@ object TestGraphs {
           new UnDirectedGraph[UnDirectedNode](initialSize, loadFactor)
 
       val generator = new DetGraphGenerator(nodeBuilder, graphBuilder)
-
       generator.create_star(100, false)
       generator.create_ring(100, 4, false)
       generator.create_grid(10, 10, false)
       generator.create_full_connected(100, false, false)
       generator.create_tree(3, 10, false, false)
+
+      val randGenerator = new RandomGraphGenerator(nodeBuilder, graphBuilder)
+      randGenerator.create_random(100, 45, false, false, new Random)
+      randGenerator.create_barabasi_albert(10, 11, new Random)
+
     }
 }
