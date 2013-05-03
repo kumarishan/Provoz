@@ -11,6 +11,9 @@ import scala.util.Random
 
 abstract class IGraph[Node <: INode] {
 
+    protected[graph] val initialSize: Option[Int]
+    protected[graph] val loadFactor: Option[Float]
+
     def maxNodeId: Int
     def startNodeId: Int
     def endNodeId: Int
@@ -18,7 +21,7 @@ abstract class IGraph[Node <: INode] {
     def numOfEdges: Long
     def suggestNextNodeId: Int
 
-    def addOrGetNode(node: Node): Node
+    def addOrReplaceNode(node: Node): Node
     def addOrFailNewNode(node: Node): Node
 
     def addEdge(fromNodeId: Int, toNodeId: Int)
@@ -71,8 +74,8 @@ object Graphs {
     // DataStore Traits for Graphs
 
     trait ADataStore[Node <: INode] {
-        protected val initialSize: Option[Int]
-        protected val loadFactor: Option[Float]
+        protected[graph] val initialSize: Option[Int]
+        protected[graph] val loadFactor: Option[Float]
 
         protected val nodeMap: Int2ObjectMap[Node]
     }
@@ -80,8 +83,8 @@ object Graphs {
     trait DataStore[Node <: INode]
         extends ADataStore[Node] {
 
-        protected val initialSize: Option[Int]
-        protected val loadFactor: Option[Float]
+        protected[graph] val initialSize: Option[Int]
+        protected[graph] val loadFactor: Option[Float]
 
         protected val _nodeMap: Int2ObjectMap[Node] =
             new Int2ObjectOpenHashMap[Node](
@@ -101,8 +104,8 @@ object Graphs {
     trait BiDirectionalDataStore[Node <: INode]
         extends ADataStore[Node] {
 
-        protected val initialSize: Option[Int]
-        protected val loadFactor: Option[Float]
+        protected[graph] val initialSize: Option[Int]
+        protected[graph] val loadFactor: Option[Float]
 
         protected val _nodeMap: Int2ObjectSortedMap[Node] =
             new Int2ObjectLinkedOpenHashMap(

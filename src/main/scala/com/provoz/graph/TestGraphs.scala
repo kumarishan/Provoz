@@ -1,8 +1,9 @@
 package com.provoz.graph
 
-import com.provoz.graph.node._
-import com.provoz.graph.UnDirectedGraphs._
-import com.provoz.graph.DirectedGraphs._
+import generator._
+import node._
+import UnDirectedGraphs._
+import DirectedGraphs._
 
 object TestGraphs {
     def main(args: Array[String]) = {
@@ -30,5 +31,18 @@ object TestGraphs {
 
       new DirectedBiDirectionalGraph[SyncDirectedNode](None, None)
       new SyncDirectedBiDirectionalGraph[SyncDirectedNode](None, None)
+
+      //Graph Generators
+      def nodeBuilder(nId: Int): UnDirectedNode = new UnDirectedNode(nId)
+      def graphBuilder(initialSize: Option[Int], loadFactor: Option[Float]) =
+          new UnDirectedGraph[UnDirectedNode](initialSize, loadFactor)
+
+      val generator = new DetGraphGenerator(nodeBuilder, graphBuilder)
+
+      generator.create_star(100, false)
+      generator.create_ring(100, 4, false)
+      generator.create_grid(10, 10, false)
+      generator.create_full_connected(100, false, false)
+      generator.create_tree(3, 10, false, false)
     }
 }

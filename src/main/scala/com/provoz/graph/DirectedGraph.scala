@@ -16,8 +16,8 @@ abstract class ADirectedGraph[Node <: DirectedNode](
     ) extends IGraph[Node]
       with Graphs.ADataStore[Node] {
 
-    override protected val initialSize = _initialSize
-    override protected val loadFactor = _loadFactor
+    override protected[graph] val initialSize = _initialSize
+    override protected[graph] val loadFactor = _loadFactor
 
     private var maxNId: Int = 0
     private var numEdges: Long = 0
@@ -44,7 +44,7 @@ abstract class ADirectedGraph[Node <: DirectedNode](
     def numOfEdges: Long = numEdges
     def suggestNextNodeId: Int = maxNodeId + 1
 
-    def addOrGetNode(node: Node): Node = {
+    def addOrReplaceNode(node: Node): Node = {
         nodeMap.put(node.nodeId, node)
         if(node.nodeId > maxNId) maxNId = node.nodeId
         if(!node.inNodes.isEmpty){
@@ -65,7 +65,7 @@ abstract class ADirectedGraph[Node <: DirectedNode](
     def addOrFailNewNode(node: Node): Node = {
         require(isNode(node.nodeId) == false,
             "Node with node id " + node.nodeId + "already present")
-        addOrGetNode(node)
+        addOrReplaceNode(node)
     }
 
     /////////////////////////////////////////////////////////////

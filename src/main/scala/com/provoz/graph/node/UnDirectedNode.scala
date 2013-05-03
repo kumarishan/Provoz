@@ -11,7 +11,7 @@ class UnDirectedNode(
         val nodeId: Int
     ) extends IUnDirectedNode {
 
-    require(nodeId > 0, "Node id cannot be negative")
+    require(nodeId >= 0, "Node id cannot be negative")
     protected[graph] val nbrNodes: IntSet = new IntOpenHashSet()
 
     def this(node: UnDirectedNode) = {

@@ -15,8 +15,8 @@ abstract class AUnDirectedGraph[Node <: UnDirectedNode](
     ) extends IGraph[Node]
       with Graphs.ADataStore[Node]{
 
-    protected val initialSize = _initialSize
-    protected val loadFactor = _loadFactor
+    protected[graph] val initialSize = _initialSize
+    protected[graph] val loadFactor = _loadFactor
 
     private var maxNId: Int = 0
     private var numEdges: Long = 0
@@ -44,7 +44,7 @@ abstract class AUnDirectedGraph[Node <: UnDirectedNode](
     def suggestNextNodeId: Int = maxNodeId + 1
 
     /////////////////////////////////////////////////////////////
-    def addOrGetNode(node: Node): Node = {
+    def addOrReplaceNode(node: Node): Node = {
         nodeMap.put(node.nodeId, node)
         if(node.nodeId > maxNId) maxNId = node.nodeId
         if(!node.nbrNodes.isEmpty){
@@ -59,7 +59,7 @@ abstract class AUnDirectedGraph[Node <: UnDirectedNode](
     def addOrFailNewNode(node: Node): Node = {
         require(isNode(node.nodeId) == false,
             "Node with node id " + node.nodeId + "already present")
-        addOrGetNode(node)
+        addOrReplaceNode(node)
     }
 
     /////////////////////////////////////////////////////////////

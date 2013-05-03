@@ -3,7 +3,7 @@ package com.provoz.graph.node
 import it.unimi.dsi.fastutil.ints.{Int2ObjectMap, Int2ObjectSortedMap}
 import it.unimi.dsi.fastutil.ints.{IntSortedSet, IntOpenHashSet, IntSet, IntSets}
 
-abstract class IDirectedNode extends INode{
+abstract class IDirectedNode extends INode {
     protected[graph] val inNodes: IntSet
     protected[graph] val outNodes: IntSet
 }
@@ -12,7 +12,7 @@ class DirectedNode(
         val nodeId: Int
     ) extends IDirectedNode {
 
-    require(nodeId > 0, "Node id cannot be negative")
+    require(nodeId >= 0, "Node id cannot be negative")
     protected[graph] val inNodes: IntSet = new IntOpenHashSet()
     protected[graph] val outNodes: IntSet = new IntOpenHashSet()
 
